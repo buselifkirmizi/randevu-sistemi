@@ -1,0 +1,17 @@
+/* Google Fonts'tan Inter ve Playfair Display fontlarını çekiyoruz */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+/* Tailwind v4 Import Şekli */
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    @apply bg-stone-50 text-stone-900 antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Serif class'ını kullanan tüm başlıklar için varsayılan font */
+  h1, h2, h3, h4, h5, h6, .serif {
+    font-family: 'Playfair Display', serif;
+  }
+}

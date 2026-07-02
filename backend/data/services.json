@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "name": "Saç Kesimi",
+    "duration": 30,
+    "price": 150
+  },
+  {
+    "id": "2",
+    "name": "Cilt Bakımı",
+    "duration": 45,
+    "price": 250
+  },
+  {
+    "id": "3",
+    "name": "Muayene",
+    "duration": 20,
+    "price": 100
+  },
+  {
+    "id": "4",
+    "name": "Saç Boyma",
+    "duration": 180,
+    "price": 300
+  },
+  {
+    "id": "5",
+    "name": "Protez Tırnak",
+    "duration": 120 ,
+    "price": 450
+  },
+  {
+    "id": "6",
+    "name": "Jel Güçlendirme",
+    "duration": 120,
+    "price": 400
+  },
+  {
+    "id": "7",
+    "name": "İpek Kirpik",
+    "duration": 100,
+    "price": 100
+  },
+  {
+    "id": "8",
+    "name": "Kaş Kontürü",
+    "duration": 60,
+    "price": 200
+  }
+]
