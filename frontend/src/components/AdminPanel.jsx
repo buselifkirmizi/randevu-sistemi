@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getAppointments, updateAppointmentStatus, getServices } from '../api/appointments';
+import '../css/AdminPanel.css';
 
 function AdminPanel() {
   const [appointments, setAppointments] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // 🔍 filtre state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('');
 
   useEffect(() => {
     loadData();
@@ -30,105 +36,233 @@ function AdminPanel() {
     try {
       await updateAppointmentStatus(id, newStatus);
       setAppointments((prev) =>
-        prev.map((appt) => (appt.id === id ? { ...appt, status: newStatus } : appt))
+        prev.map((appt) =>
+          appt.id === id ? { ...appt, status: newStatus } : appt
+        )
       );
     } catch (error) {
       alert('Hata: ' + error.message);
     }
   }
 
+  // 📅 istatistikler
+  const totalAppointments = appointments.length;
+
+  const pendingAppointments = appointments.filter(
+    (appt) => appt.status === 'pending'
+  ).length;
+
+  const confirmedAppointments = appointments.filter(
+    (appt) => appt.status === 'confirmed'
+  ).length;
+
+  const cancelledAppointments = appointments.filter(
+    (appt) => appt.status === 'cancelled'
+  ).length;
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const todayAppointments = appointments.filter(
+    (appt) => appt.date === today
+  ).length;
+
+  const upcomingAppointment = appointments
+    .filter((appt) => appt.date >= today)
+    .sort(
+      (a, b) =>
+        new Date(`${a.date}T${a.time}`) -
+        new Date(`${b.date}T${b.time}`)
+    )[0];
+
+  // 🔍 filtreleme sistemi
+  const filteredAppointments = appointments.filter((appt) => {
+    const searchMatch = appt.customerName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const statusMatch =
+      statusFilter === 'all' || appt.status === statusFilter;
+
+    const dateMatch = dateFilter === '' || appt.date === dateFilter;
+
+    return searchMatch && statusMatch && dateMatch;
+  });
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <p className="text-stone-500 font-medium animate-pulse">Veriler yükleniyor...</p>
-      </div>
+      <p className="loading-text loading-pulse">
+        Veriler yükleniyor...
+      </p>
     );
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="sm:flex sm:items-center sm:justify-between mb-8 bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+    <div className="admin-panel-page">
+      <div className="admin-panel-inner">
+
+        {/* HEADER */}
+        <div className="admin-panel-header">
           <div>
-            <h1 className="text-2xl font-bold text-stone-900 font-serif">Randevu Yönetimi</h1>
-            <p className="mt-1 text-sm text-stone-500">Tüm randevuları buradan görüntüleyip yönetebilirsiniz.</p>
+            <h1 className="admin-panel-title">Randevu Yönetimi</h1>
+            <p className="admin-panel-subtitle">
+              Tüm randevuları buradan görüntüleyip yönetebilirsiniz.
+            </p>
           </div>
-          <div className="mt-4 sm:mt-0">
-            <button
-              onClick={() => {
-                localStorage.removeItem('adminToken');
-                window.location.href = '/';
-              }}
-              className="inline-flex items-center justify-center px-4 py-2 border border-stone-200 rounded-lg shadow-sm text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 focus:outline-none transition-colors"
-            >
-              Çıkış Yap
-            </button>
+
+          <button
+            className="admin-logout-btn"
+            onClick={() => {
+              localStorage.removeItem('adminToken');
+              window.location.href = '/';
+            }}
+          >
+            Çıkış Yap
+          </button>
+        </div>
+
+        {/* DASHBOARD */}
+        <div className="dashboard-cards">
+
+          <div className="dashboard-card">
+            <div className="dashboard-icon">📅</div>
+            <h3>Toplam</h3>
+            <span>{totalAppointments}</span>
+          </div>
+
+          <div className="dashboard-card">
+            <div className="dashboard-icon">⏳</div>
+            <h3>Bekleyen</h3>
+            <span>{pendingAppointments}</span>
+          </div>
+
+          <div className="dashboard-card">
+            <div className="dashboard-icon">✅</div>
+            <h3>Onaylanan</h3>
+            <span>{confirmedAppointments}</span>
+          </div>
+
+          <div className="dashboard-card">
+            <div className="dashboard-icon">❌</div>
+            <h3>İptal</h3>
+            <span>{cancelledAppointments}</span>
+          </div>
+
+          <div className="dashboard-card">
+            <div className="dashboard-icon">📆</div>
+            <h3>Bugün</h3>
+            <span>{todayAppointments}</span>
+          </div>
+
+          <div className="dashboard-card">
+            <div className="dashboard-icon">⏰</div>
+            <h3>Yaklaşan</h3>
+            <span>
+              {upcomingAppointment
+                ? upcomingAppointment.time
+                : '-'}
+            </span>
           </div>
         </div>
 
-        {appointments.length === 0 ? (
-          <div className="text-center bg-white py-16 rounded-2xl shadow-sm border border-stone-100">
-            <p className="text-stone-500 text-lg">Henüz randevu bulunmuyor.</p>
+        {/* FİLTRELER */}
+        <div className="admin-filters">
+
+          <input
+            type="text"
+            placeholder="Müşteri ara..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="filter-input"
+          />
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">Tümü</option>
+            <option value="pending">Bekleyen</option>
+            <option value="confirmed">Onaylanan</option>
+            <option value="cancelled">İptal</option>
+          </select>
+
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="filter-date"
+          />
+        </div>
+
+        {/* TABLO */}
+        {filteredAppointments.length === 0 ? (
+          <div className="admin-empty">
+            Aramanıza uygun randevu bulunamadı.
           </div>
         ) : (
-          <div className="bg-white shadow-sm border border-stone-100 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-stone-200">
-                <thead className="bg-stone-50/50">
-                  <tr>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Müşteri</th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Telefon</th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Hizmet</th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Tarih / Saat</th>
-                    <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">Durum</th>
-                    <th scope="col" className="px-6 py-4 text-right text-xs font-semibold text-stone-500 uppercase tracking-wider">İşlem</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-stone-100">
-                  {appointments.map((appt) => (
-                    <tr key={appt.id} className="hover:bg-stone-50/50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-stone-900">{appt.customerName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-500">{appt.phone}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-600">{getServiceName(appt.serviceId)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-600">
-                        {appt.date} <span className="text-stone-400 mx-1">|</span> {appt.time}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
-                          ${appt.status === 'pending' ? 'bg-amber-100 text-amber-800' : ''}
-                          ${appt.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800' : ''}
-                          ${appt.status === 'cancelled' ? 'bg-rose-100 text-rose-800' : ''}
-                        `}>
-                          {appt.status === 'pending' && 'Beklemede'}
-                          {appt.status === 'confirmed' && 'Onaylandı'}
-                          {appt.status === 'cancelled' && 'İptal Edildi'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Müşteri</th>
+                  <th>Telefon</th>
+                  <th>Hizmet</th>
+                  <th>Tarih / Saat</th>
+                  <th>Durum</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredAppointments.map((appt) => (
+                  <tr key={appt.id}>
+                    <td>{appt.customerName}</td>
+                    <td>{appt.phone}</td>
+                    <td>{getServiceName(appt.serviceId)}</td>
+                    <td>{appt.date} | {appt.time}</td>
+
+                    <td>
+                      <span className={`status-badge status-${appt.status}`}>
+                        {appt.status === 'pending' && 'Beklemede'}
+                        {appt.status === 'confirmed' && 'Onaylandı'}
+                        {appt.status === 'cancelled' && 'İptal'}
+                      </span>
+                    </td>
+
+                    <td>
+                      <div className="action-btns">
+
                         {appt.status !== 'confirmed' && (
                           <button
-                            onClick={() => handleStatusChange(appt.id, 'confirmed')}
-                            className="text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors"
+                            className="btn-confirm"
+                            onClick={() =>
+                              handleStatusChange(appt.id, 'confirmed')
+                            }
                           >
                             Onayla
                           </button>
                         )}
+
                         {appt.status !== 'cancelled' && (
                           <button
-                            onClick={() => handleStatusChange(appt.id, 'cancelled')}
-                            className="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-colors"
+                            className="btn-cancel"
+                            onClick={() =>
+                              handleStatusChange(appt.id, 'cancelled')
+                            }
                           >
-                            İptal Et
+                            İptal
                           </button>
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
+
       </div>
     </div>
   );

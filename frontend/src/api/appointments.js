@@ -1,33 +1,35 @@
 const API_URL = 'http://localhost:5000/api';
 
 export async function getServices() {
-  const response = await fetch(`${API_URL}/services`);
-  return response.json();
+  const res = await fetch(`${API_URL}/services`);
+  return res.json();
 }
 
-export async function createAppointment(appointmentData) {
-  const response = await fetch(`${API_URL}/appointments`, {
+export async function createAppointment(data) {
+  const res = await fetch(`${API_URL}/appointments`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(appointmentData),
+    body: JSON.stringify(data),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Randevu oluşturulamadı.');
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(result.error || 'Hata oluştu');
   }
 
-  return response.json();
+  return result;
 }
+
 export async function getAppointments() {
-  const response = await fetch(`${API_URL}/appointments`);
-  return response.json();
+  const res = await fetch(`${API_URL}/appointments`);
+  return res.json();
 }
 
 export async function updateAppointmentStatus(id, status) {
   const token = localStorage.getItem('adminToken');
 
-  const response = await fetch(`${API_URL}/appointments/${id}`, {
+  const res = await fetch(`${API_URL}/appointments/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -36,24 +38,33 @@ export async function updateAppointmentStatus(id, status) {
     body: JSON.stringify({ status }),
   });
 
-  if (!response.ok) {
-    throw new Error('Randevu güncellenemedi.');
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(result.error || 'Güncellenemedi');
   }
 
-  return response.json();
+  return result;
 }
 
 export async function login(username, password) {
-  const response = await fetch(`${API_URL}/auth/login`, {
+  const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Giriş başarısız.');
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(result.error || 'Giriş başarısız');
   }
 
+  return result;
+}
+export async function getAvailableSlots(date, duration) {
+  const response = await fetch(
+    `${API_URL}/appointments/slots?date=${date}&duration=${duration}`
+  );
   return response.json();
 }
