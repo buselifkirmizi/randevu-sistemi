@@ -64,7 +64,7 @@ body {
 }
 
 .page-hero {
-  background: var(--stone-900);
+  background: linear-gradient(135deg, #2D1B1B 0%, #4A2020 100%);
   color: white;
   padding: 96px 24px;
   text-align: center;

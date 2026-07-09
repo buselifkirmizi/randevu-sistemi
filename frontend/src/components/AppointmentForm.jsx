@@ -159,7 +159,6 @@ function AppointmentForm() {
             <option value="" disabled>
               Lütfen bir hizmet seçiniz
             </option>
-
             {services.map((service) => (
               <option key={service.id} value={service.id}>
                 {service.name} ({service.duration} dk — {service.price}₺)

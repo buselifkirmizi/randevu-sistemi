@@ -1,5 +1,4 @@
 [
-  
   {
     "id": "1",
     "name": "Saç Kesimi",
@@ -27,7 +26,7 @@
   {
     "id": "5",
     "name": "Protez Tırnak",
-    "duration": 120 ,
+    "duration": 120,
     "price": 450
   },
   {
@@ -47,5 +46,17 @@
     "name": "Kaş Kontürü",
     "duration": 60,
     "price": 200
+  },
+  {
+    "id": "1783516975684",
+    "name": "manikür",
+    "duration": 120,
+    "price": 300
+  },
+  {
+    "id": "1783518728118",
+    "name": "mmm",
+    "duration": 2,
+    "price": 4
   }
 ]

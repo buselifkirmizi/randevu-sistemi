@@ -68,3 +68,49 @@ export async function getAvailableSlots(date, duration) {
   );
   return response.json();
 }
+export async function addService(data) {
+  const token = localStorage.getItem('adminToken');
+  const response = await fetch(`${API_URL}/services`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Hizmet eklenemedi.');
+  }
+  return response.json();
+}
+
+export async function updateService(id, data) {
+  const token = localStorage.getItem('adminToken');
+  const response = await fetch(`${API_URL}/services/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Hizmet güncellenemedi.');
+  }
+  return response.json();
+}
+
+export async function deleteService(id) {
+  const token = localStorage.getItem('adminToken');
+  const response = await fetch(`${API_URL}/services/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Hizmet silinemedi.');
+  }
+  return response.json();
+}
